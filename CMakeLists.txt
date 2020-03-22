@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.15)
 
 project(torrent_pp)
 
@@ -7,9 +7,6 @@ set(OUTPUT_DIR "win32-x64")
 set(PLATFORM_DEFINES
     -D_WIN32_WINNT=0x0601
     -DWIN32)
-
-set(PLATFORM_LIBS
-    crypt32)
     
 set(BOOST_DEBUG ON)
 
@@ -54,9 +51,13 @@ find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system date_time)
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 set(BUILD_SHARED_LIBS       OFF)
+
 set(OPENSSL_USE_STATIC_LIBS TRUE)
+find_package(OpenSSL REQUIRED)
+
+set(deprecated-functions OFF)
+set(static_runtime ON)
 
 add_subdirectory(libtorrent)
 add_subdirectory(fmt)
@@ -66,10 +67,36 @@ file(GLOB SOURCE_FILES "src/*")
 add_executable(
     ${PROJECT_NAME}
     ${SOURCE_FILES})
+
+set(CompilerFlags
+        CMAKE_CXX_FLAGS
+        CMAKE_CXX_FLAGS_DEBUG
+        CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL
+        CMAKE_CXX_FLAGS_RELWITHDEBINFO
+        CMAKE_C_FLAGS
+        CMAKE_C_FLAGS_DEBUG
+        CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL
+        CMAKE_C_FLAGS_RELWITHDEBINFO
+        )
+foreach(CompilerFlag ${CompilerFlags})
+    string(REPLACE "/MD" "/MT" ${CompilerFlag} "${${CompilerFlag}}")
+    set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
+    message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
+endforeach()
     
 target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     "${CMAKE_SOURCE_DIR}/libtorrent/include")
     
-target_link_libraries(${PROJECT_NAME} PUBLIC Boost::system Boost::date_time "torrent-rasterbar" "fmt")
+target_link_libraries(
+    ${PROJECT_NAME} 
+    crypt32
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::system 
+    Boost::date_time 
+    "torrent-rasterbar" 
+    "fmt" )

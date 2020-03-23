@@ -40,7 +40,7 @@ In not error cases we got message is equal to torrent file, and different types:
 ### status message
 
 ```json
-{ "updated_at" : "%llu", "bytes" : %llu, "bytes_done" : "%llu", "progress" : %.2f, "type" : "%s", "speed" : %.2f }
+{ "updated_at" : %llu, "bytes" : %llu, "bytes_done" : %llu, "progress" : %.2f, "type" : "%s", "speed" : %.2f }
 ```
 
 updated_at - last timestamp when this message was invoked

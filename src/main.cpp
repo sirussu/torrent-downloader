@@ -35,7 +35,7 @@ char const* state(lt::torrent_status::state_t s)
 }
 
 const std::string UpdateJson = R"({ "message" : "%s", "error" : %b, "type" : "%s" })";
-const std::string StatusJson = R"({ "updated_at" : "%llu", "bytes" : %llu, "bytes_done" : "%llu", "progress" : %.2f, "type" : "%s", "speed" : %.2f })";
+const std::string StatusJson = R"({ "updated_at" : %llu, "bytes" : %llu, "bytes_done" : %llu, "progress" : %.2f, "type" : "%s", "speed" : %.2f })";
 
 void OutStatus(std::string text)
 {

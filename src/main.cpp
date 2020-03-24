@@ -34,8 +34,8 @@ char const* state(lt::torrent_status::state_t s)
 	}
 }
 
-const std::string UpdateJson = R"({ "message" : "%s", "error" : %b, "type" : "%s" })";
-const std::string StatusJson = R"({ "updated_at" : %llu, "bytes" : %llu, "bytes_done" : %llu, "progress" : %.2f, "type" : "%s", "speed" : %.2f })";
+const std::string UpdateJson = R"({"message" : "%s", "error" : %b, "type" : "%s"})";
+const std::string StatusJson = R"({"updated_at" : %llu, "bytes" : %llu, "bytes_done" : %llu, "progress" : %.5f, "type" : "%s", "speed" : %llu})";
 
 void OutStatus(std::string text)
 {
@@ -95,9 +95,7 @@ int main(int argc, char const* argv[]) try
 	OutStatus(Trinity::StringFormat(UpdateJson, atp.ti->name(), false, "download-setup"));
 	ses.async_add_torrent(std::move(atp));
 
-	std::pair<time_t, int64_t> lastStatus = { 0, 0 };
-
-	//this is the handle we'll set once we get the notification of it 
+	//this is the handle we'll set once we get the notification of it
 	lt::torrent_handle h;
 	for (;;) {
 		std::vector<lt::alert*> alerts;
@@ -141,15 +139,9 @@ int main(int argc, char const* argv[]) try
 					<< (s.progress_ppm / 10000) << "%) downloaded\x1b[K";
 				std::cout.flush();*/
 
-				float speed = .0f;
 				time_t updateAt = time(nullptr);
-				if (lastStatus.first != 0)
-				{
-					float timeDiff = static_cast<float>(std::max<int64_t>(updateAt - lastStatus.first, 1));
-					speed = std::max<float>(float(s.total_done - lastStatus.second) / timeDiff, 0.f);
-				}
 
-				OutStatus(Trinity::StringFormat(StatusJson, updateAt, s.total, s.total_done, float(s.total_done) / s.total, state(s.state), speed));
+				OutStatus(Trinity::StringFormat(StatusJson, updateAt, s.total, s.total_done, s.progress, state(s.state), s.download_payload_rate));
 			}
 		}
 		std::this_thread::sleep_for(std::chrono::milliseconds(2000));

@@ -53,13 +53,18 @@ int main(int argc, char const* argv[])
 
 	if (command == "torrent")
 	{
+	    if (argc < 4) {
+            OutStatus(Trinity::StringFormat(UpdateJson, "Please provide torrent file and output dir", true, "system-error"));
+            return 1;
+	    }
+
 		std::string filename = argv[2];
-		std::string saveDir = "";
-		if (argc > 3)
-			saveDir = argv[2];
+		std::string saveDir = argv[3];
+
 		int64_t speedLimit = 0;
+
 		if (argc > 4)
-			speedLimit = atoi(argv[3]);
+			speedLimit = atoi(argv[4]);
 
 		try
 		{

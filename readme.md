@@ -7,7 +7,10 @@
 ```bash
 
 #usage
-binary  <torrent-file w path> <download-dir full path> <speed limit bytes>
+binary  <command> <parameters>
+
+#command "torrent"
+<torrent-file w path> <download-dir full path> <speed limit bytes>
 
 # torrent-file - full path to the *.torrent file
 # download-dir - full path to the dir where torrent was downloaded (optional, default current dir)

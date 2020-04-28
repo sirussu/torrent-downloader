@@ -184,10 +184,14 @@ int main(int argc, char const* argv[])
 				OutStatus(Trinity::StringFormat(UpdateJson, ec.message(), true, "boost-error"));
 			else
 				OutStatus(Trinity::StringFormat(UpdateJson, ec.value(), true, "libtorrent-error"));
+
+            return 1;
 		}
 		catch (std::exception & e)
 		{
 			OutStatus(Trinity::StringFormat(UpdateJson, e.what(), true, "system-error"));
+
+            return 1;
 		}
 	}
 

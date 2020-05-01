@@ -22,5 +22,7 @@ const executables = [
                 reject(err)
             });
         })
-    }))
+    }));
+
+    fs.chmodSync('vendor/td-linux-x64/td-linux-x64', '775')
 })();

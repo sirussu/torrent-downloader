@@ -1,0 +1,23 @@
+{
+  "name": "@sirussu/torrent-downloader",
+  "version": "1.0.2",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "node prepare.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sirussu/torrent-downloader.git"
+  },
+  "author": "sirussu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sirussu/torrent-downloader/issues"
+  },
+  "homepage": "https://github.com/sirussu/torrent-downloader#readme",
+  "dependencies": {
+    "follow-redirects": "^1.11.0",
+    "unzipper": "^0.10.11"
+  }
+}

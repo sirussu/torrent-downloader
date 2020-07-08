@@ -16,6 +16,9 @@
 #include <libtorrent/write_resume_data.hpp>
 #include <libtorrent/error_code.hpp>
 #include "StringFormat.h"
+#ifdef _WIN32
+#include <shellapi.h>
+#endif
 
 using clk = std::chrono::steady_clock;
 
@@ -42,20 +45,55 @@ void OutStatus(std::string text)
 	std::cout << text << std::endl << std::flush;
 }
 
+#ifdef _WIN32
+int wCharToUtf8(char* out, size_t outLength, const wchar_t* src)
+{
+	return WideCharToMultiByte(CP_UTF8, 0, src, -1, out, outLength, nullptr,
+		nullptr);
+}
+std::string wCharToUtf8(const std::wstring& wsrc)
+{
+	int len = wCharToUtf8(nullptr, 0, wsrc.c_str());
+	if (len <= 0) {
+		abort();
+	}
+	auto buf = std::make_unique<char[]>((size_t)len);
+	len = wCharToUtf8(buf.get(), len, wsrc.c_str());
+	if (len <= 0) {
+		abort();
+	}
+	else {
+		return buf.get();
+	}
+}
+#endif
+
 int main(int argc, char const* argv[])
 {
-#ifdef _WIN32
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
-    setlocale(LC_ALL, "");
-#endif // _WIN32
+    if (argc < 2) {
+        std::cerr << "usage: " << argv[0] << " <command> <parameters>" << std::endl;
+        return 1;
+    }
 
-	if (argc < 2) {
-		std::cerr << "usage: " << argv[0] << " <command> <parameters>" << std::endl;
+    std::string command(argv[1]);
+
+#ifdef _WIN32
+    int winArgc;
+	auto winArgv = CommandLineToArgvW(GetCommandLineW(), &winArgc);
+
+	if (winArgv == nullptr) {
+		OutStatus(Trinity::StringFormat(UpdateJson, "CMD arguments parsing error", true, "system-error"));
 		return 1;
 	}
 
-	std::string command(argv[1]);
+	std::vector<std::unique_ptr<char>> winArgStrs;
+	winArgStrs.reserve(winArgc);
+
+	for (int i = 0; i < winArgc; ++i) {
+		winArgStrs.emplace_back(strdup(wCharToUtf8(winArgv[i]).c_str()));
+		argv[i] = winArgStrs.back().get();
+	}
+#endif // _WIN32
 
 	if (command == "torrent")
 	{

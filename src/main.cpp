@@ -44,6 +44,12 @@ void OutStatus(std::string text)
 
 int main(int argc, char const* argv[])
 {
+#ifdef _WIN32
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    setlocale(LC_ALL, "");
+#endif // _WIN32
+
 	if (argc < 2) {
 		std::cerr << "usage: " << argv[0] << " <command> <parameters>" << std::endl;
 		return 1;
@@ -76,6 +82,7 @@ int main(int argc, char const* argv[])
 			pack.set_bool(lt::settings_pack::enable_dht, true);
 			pack.set_bool(lt::settings_pack::enable_lsd, true);
 			pack.set_int(lt::settings_pack::in_enc_policy, 1);
+			//pack.set_int(lt::settings_pack::port, 1);
 			pack.set_int(lt::settings_pack::out_enc_policy, 1);
 			pack.set_int(lt::settings_pack::stop_tracker_timeout, 1);
 			pack.set_str(lt::settings_pack::user_agent, "Sirus/Launcher");
@@ -132,7 +139,7 @@ int main(int argc, char const* argv[])
 					}
 					if (lt::alert_cast<lt::torrent_error_alert>(a)) {
 						OutStatus(Trinity::StringFormat(UpdateJson, a->message(), true, "download-error"));
-						return 0;
+						return 1;
 					}
 
 					// when resume data is ready, save it

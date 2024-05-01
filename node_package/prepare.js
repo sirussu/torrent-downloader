@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const unzipper = require('unzipper')
 
-const RELEASE = 'v1.0';
+const RELEASE = 'v1.0.1';
 
 const executables = [
     `https://github.com/sirussu/torrent-downloader/releases/download/${RELEASE}/td-linux-x64.zip`,

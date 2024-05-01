@@ -36,8 +36,6 @@ char const *state(lt::torrent_status::state_t s) {
             return "finished";
         case lt::torrent_status::seeding:
             return "seeding";
-        case lt::torrent_status::allocating:
-            return "allocating";
         case lt::torrent_status::checking_resume_data:
             return "checking resume";
         default:
@@ -145,7 +143,7 @@ int main(int argc, char const *argv[]) {
                 std::vector<char> buf{std::istream_iterator<char>(ifs), std::istream_iterator<char>()};
 
                 atp = lt::read_resume_data(buf);
-                if (atp.info_hash != ntp.info_hash) {
+                if (atp.info_hashes != ntp.info_hashes) {
                     atp = std::move(ntp);
                 }
             } else

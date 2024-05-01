@@ -47,7 +47,7 @@ set(Boost_USE_STATIC_RUNTIME     OFF)
 
 set(BOOST_REQUIRED_VERSION 1.68)
 
-find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system date_time)
+find_package(Boost ${BOOST_REQUIRED_VERSION} REQUIRED system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -85,18 +85,33 @@ foreach(CompilerFlag ${CompilerFlags})
     set(${CompilerFlag} "${${CompilerFlag}}" CACHE STRING "msvc compiler flags" FORCE)
     message("MSVC flags: ${CompilerFlag}:${${CompilerFlag}}")
 endforeach()
+
+set_property(TARGET torrent_pp PROPERTY CXX_STANDARD 17)
+target_compile_features(torrent_pp
+	PUBLIC
+		cxx_std_17)
     
 target_include_directories(
     ${PROJECT_NAME}
     PRIVATE
     "${CMAKE_SOURCE_DIR}/libtorrent/include")
-    
+
+# check if we are on windows
+if (WIN32)
 target_link_libraries(
     ${PROJECT_NAME} 
     crypt32
     OpenSSL::SSL
     OpenSSL::Crypto
     Boost::system 
-    Boost::date_time 
     "torrent-rasterbar" 
     "fmt" )
+else()
+target_link_libraries(
+    ${PROJECT_NAME} 
+    OpenSSL::SSL
+    OpenSSL::Crypto
+    Boost::system 
+    "torrent-rasterbar" 
+    "fmt" )
+endif()

@@ -91,6 +91,11 @@ jobs:
         working-directory: build
         shell: bash
         run: cmake --build . --config Release -j4
+      - name: Log all files (cross-platform)
+        shell: bash # Or remove shell: bash if it's already your default
+        working-directory: build # Or ../build, etc.
+        run: |
+          ls -lR
       - name: Prepare Windows Artifact
         id: prepare-windows-artifact
         run: |

@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive # Checkout submodules
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -26,6 +28,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive # Checkout submodules
       - name: Install dependencies
         run: |
           brew install boost boost-build openssl@3
@@ -43,6 +47,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive # Checkout submodules
       - name: Install dependencies
         shell: pwsh
         run: |

@@ -19,7 +19,7 @@ endif()
 # Boost
 set(BOOST_DEBUG ON)  # Consider making this optional with a CMake option
 
-find_package(Boost 1.81.0 REQUIRED system) # Simplified Boost finding
+find_package(Boost 1.74.0 REQUIRED system) # Simplified Boost finding
 include_directories(${Boost_INCLUDE_DIRS})
 
 # OpenSSL

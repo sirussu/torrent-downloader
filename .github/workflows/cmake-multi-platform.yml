@@ -1,16 +1,19 @@
-name: CMake Build
+name: CMake Build and Release
 
 on:
   push:
-    branches: [ "master" ]
+    tags:
+      - "v*"
 
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    outputs:
+      artifact_path: ${{ steps.prepare-linux-artifact.outputs.artifact_path }}
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive # Checkout submodules
+          submodules: recursive
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -23,13 +26,21 @@ jobs:
       - name: Build
         working-directory: build
         run: cmake --build . --config Release
+      - name: Prepare Linux Artifact
+        id: prepare-linux-artifact
+        run: |
+          mkdir linux-artifact
+          cp build/torrent_pp linux-artifact/torrent_pp
+          echo "::set-output name=artifact_path::linux-artifact"
 
   build-macos:
     runs-on: macos-latest
+    outputs:
+      artifact_path: ${{ steps.prepare-macos-artifact.outputs.artifact_path }}
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive # Checkout submodules
+          submodules: recursive
       - name: Install dependencies
         run: |
           brew install boost boost-build openssl@3
@@ -41,25 +52,33 @@ jobs:
       - name: Build
         working-directory: build
         run: cmake --build . --config Release
+      - name: Prepare macOS Artifact
+        id: prepare-macos-artifact
+        run: |
+          mkdir macos-artifact
+          cp build/torrent_pp macos-artifact/torrent_pp
+          echo "::set-output name=artifact_path::macos-artifact"
 
 
   build-windows:
     runs-on: windows-latest
+    outputs:
+      artifact_path: ${{ steps.prepare-windows-artifact.outputs.artifact_path }}
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive # Checkout submodules
+          submodules: recursive
       - name: Install dependencies
         shell: pwsh
         run: |
           choco install -y openssl
       - name: Install boost
         uses: MarkusJx/install-boost@v2.4.5
-        id: install-boost # Important: Set an ID for the step
+        id: install-boost
         with:
-          boost_version: 1.81.0 # or 1.74.0 as you need
+          boost_version: 1.81.0
           toolset: msvc
-          platform_version: 2019  # Or whichever you are using
+          platform_version: 2019
       - name: Configure CMake
         shell: bash
         run: |
@@ -70,5 +89,50 @@ jobs:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       - name: Build
         working-directory: build
-        shell: bash  # Important to keep bash here for consistency
+        shell: bash
         run: cmake --build . --config Release
+      - name: Prepare Windows Artifact
+        id: prepare-windows-artifact
+        run: |
+          mkdir windows-artifact
+          cp build/Release/torrent_pp.exe windows-artifact/torrent_pp.exe # Replace if needed
+          echo "::set-output name=artifact_path::windows-artifact"
+
+  release:
+    needs: [build-linux, build-macos, build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Linux Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build-linux.outputs.artifact_path }}
+          path: linux-artifact
+      - name: Download macOS Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build-macos.outputs.artifact_path }}
+          path: macos-artifact
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ needs.build-windows.outputs.artifact_path }}
+          path: windows-artifact
+      - name: Extract Release Version
+        id: extract_release
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "::set-output name=release_version::$VERSION"
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            linux-artifact/*
+            macos-artifact/*
+            windows-artifact/*
+          tag_name: ${{ github.ref }}
+          name: Release ${{ steps.extract_release.outputs.release_version }}
+          body: Release ${{ steps.extract_release.outputs.release_version }}
+          draft: false
+          prerelease: false

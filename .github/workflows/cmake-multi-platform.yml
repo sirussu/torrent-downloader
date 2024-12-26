@@ -57,7 +57,7 @@ jobs:
         uses: MarkusJx/install-boost@v2.4.5
         id: install-boost # Important: Set an ID for the step
         with:
-          boost_version: 1.74.0 # or 1.74.0 as you need
+          boost_version: 1.81.0 # or 1.74.0 as you need
           toolset: msvc
           platform_version: 2019  # Or whichever you are using
       - name: Configure CMake

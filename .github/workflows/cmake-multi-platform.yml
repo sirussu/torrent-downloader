@@ -5,40 +5,56 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [windows-2019, ubuntu-latest, macos-latest]
-
+  build-linux:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Install dependencies (Linux)
-        if: runner.os == 'Linux'
+      - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential libboost-all-dev libssl-dev  # Add other Linux deps here
+          sudo apt-get install -y build-essential libboost-all-dev libssl-dev
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        working-directory: build
+        run: cmake --build . --config Release
 
-      - name: Install dependencies (macOS)
-        if: runner.os == 'macOS'
-        run: brew install boost boost-build openssl@3 # Add other macOS deps here
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          brew update
+          brew bundle --file=Brewfile # Or brew install <package>...
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        working-directory: build
+        run: cmake --build . --config Release
 
 
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        shell: pwsh
+        run: |
+          choco install -y boost openssl
       - name: Configure CMake
         shell: bash
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release ${{ if eq(runner.os, 'windows-2019') then '-Thost=x64 -G "Visual Studio 16 2019" -A x64' else '' endif }}
-
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A x64
       - name: Build
         working-directory: build
-        shell: bash
-        run: |
-          if [[ ${{ runner.os }} == 'windows-2019' ]]; then
-            cmake --build . --config Release -- /m
-          else
-            cmake --build . --config Release
-          fi
+        shell: bash  # Important to keep bash here for consistency
+        run: cmake --build . --config Release

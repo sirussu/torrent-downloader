@@ -25,12 +25,12 @@ jobs:
           cmake .. -DCMAKE_BUILD_TYPE=Release
       - name: Build
         working-directory: build
-        run: cmake --build . --config Release
+        run: cmake --build . --config Release -j4
       - name: Prepare Linux Artifact
         id: prepare-linux-artifact
         run: |
           mkdir linux-artifact
-          cp build/torrent_pp linux-artifact/torrent_pp
+          cp build/bin/torrent_pp linux-artifact/torrent_pp
           echo "::set-output name=artifact_path::linux-artifact"
 
   build-macos:
@@ -48,7 +48,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          cmake .. -DCMAKE_BUILD_TYPE=Release -j4
       - name: Build
         working-directory: build
         run: cmake --build . --config Release
@@ -56,7 +56,7 @@ jobs:
         id: prepare-macos-artifact
         run: |
           mkdir macos-artifact
-          cp build/torrent_pp macos-artifact/torrent_pp
+          cp build/bin/torrent_pp macos-artifact/torrent_pp
           echo "::set-output name=artifact_path::macos-artifact"
 
 
@@ -90,7 +90,7 @@ jobs:
       - name: Build
         working-directory: build
         shell: bash
-        run: cmake --build . --config Release
+        run: cmake --build . --config Release -j4
       - name: Prepare Windows Artifact
         id: prepare-windows-artifact
         run: |

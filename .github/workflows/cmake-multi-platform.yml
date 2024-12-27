@@ -9,7 +9,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     outputs:
-      artifact_path: ${{ steps.prepare-linux-artifact.outputs.artifact_path }}
+      artifact_path: linux-artifact
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,16 +27,19 @@ jobs:
         working-directory: build
         run: cmake --build . --config Release -j4
       - name: Prepare Linux Artifact
-        id: prepare-linux-artifact
         run: |
-          mkdir linux-artifact
+          mkdir -p linux-artifact
           cp build/bin/torrent_pp linux-artifact/torrent_pp
-          echo "::set-output name=artifact_path::linux-artifact"
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: linux-artifact
+          path: linux-artifact
 
   build-macos:
     runs-on: macos-latest
     outputs:
-      artifact_path: ${{ steps.prepare-macos-artifact.outputs.artifact_path }}
+      artifact_path: macos-artifact
     steps:
       - uses: actions/checkout@v4
         with:
@@ -53,17 +56,19 @@ jobs:
         working-directory: build
         run: cmake --build . --config Release -j4
       - name: Prepare macOS Artifact
-        id: prepare-macos-artifact
         run: |
-          mkdir macos-artifact
+          mkdir -p macos-artifact
           cp build/bin/torrent_pp macos-artifact/torrent_pp
-          echo "::set-output name=artifact_path::macos-artifact"
-
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-artifact
+          path: macos-artifact
 
   build-windows:
     runs-on: windows-latest
     outputs:
-      artifact_path: ${{ steps.prepare-windows-artifact.outputs.artifact_path }}
+      artifact_path: windows-artifact
     steps:
       - uses: actions/checkout@v4
         with:
@@ -72,9 +77,8 @@ jobs:
         shell: pwsh
         run: |
           choco install -y openssl
-      - name: Install boost
+      - name: Install Boost
         uses: MarkusJx/install-boost@v2.4.5
-        id: install-boost
         with:
           boost_version: 1.81.0
           toolset: msvc
@@ -85,23 +89,19 @@ jobs:
           mkdir build
           cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -A x64
-        env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
       - name: Build
         working-directory: build
         shell: bash
         run: cmake --build . --config Release -j4
-#      - name: Log all files (cross-platform)
-#        shell: bash # Or remove shell: bash if it's already your default
-#        working-directory: build # Or ../build, etc.
-#        run: |
-#          ls -lR
       - name: Prepare Windows Artifact
-        id: prepare-windows-artifact
         run: |
-          mkdir windows-artifact
-          cp build/bin/Release/torrent_pp.exe windows-artifact/torrent_pp.exe # Replace if needed
-          echo "::set-output name=artifact_path::windows-artifact"
+          mkdir -p windows-artifact
+          cp build/bin/Release/torrent_pp.exe windows-artifact/torrent_pp.exe
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifact
+          path: windows-artifact
 
   release:
     needs: [build-linux, build-macos, build-windows]
@@ -112,23 +112,23 @@ jobs:
       - name: Download Linux Artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build-linux.outputs.artifact_path }}
+          name: linux-artifact
           path: linux-artifact
       - name: Download macOS Artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build-macos.outputs.artifact_path }}
+          name: macos-artifact
           path: macos-artifact
       - name: Download Windows Artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build-windows.outputs.artifact_path }}
+          name: windows-artifact
           path: windows-artifact
       - name: Extract Release Version
         id: extract_release
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
-          echo "::set-output name=release_version::$VERSION"
+          echo "release_version=$VERSION" >> $GITHUB_ENV
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -137,7 +137,7 @@ jobs:
             macos-artifact/*
             windows-artifact/*
           tag_name: ${{ github.ref }}
-          name: Release ${{ steps.extract_release.outputs.release_version }}
-          body: Release ${{ steps.extract_release.outputs.release_version }}
+          name: Release ${{ env.release_version }}
+          body: Release ${{ env.release_version }}
           draft: false
           prerelease: false

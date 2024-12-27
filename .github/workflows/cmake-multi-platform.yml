@@ -29,7 +29,7 @@ jobs:
       - name: Prepare Linux Artifact
         run: |
           mkdir -p linux-artifact
-          cp build/bin/torrent_pp linux-artifact/torrent_pp
+          cp build/bin/torrent_pp linux-artifact/torrent-linux-x64
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -58,7 +58,7 @@ jobs:
       - name: Prepare macOS Artifact
         run: |
           mkdir -p macos-artifact
-          cp build/bin/torrent_pp macos-artifact/torrent_pp
+          cp build/bin/torrent_pp macos-artifact/torrent-macos
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v3
         with:
@@ -99,7 +99,7 @@ jobs:
       - name: Prepare Windows Artifact
         run: |
           mkdir -p windows-artifact
-          cp build/bin/Release/torrent_pp.exe windows-artifact/torrent_pp.exe
+          cp build/bin/Release/torrent_pp.exe windows-artifact/torrent_win-x64.exe
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v3
         with:

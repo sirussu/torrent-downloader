@@ -24,7 +24,11 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          # Specify PC_INSTALL_DIR so pkg-config files go into <prefix>/lib/pkgconfig
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=../install \
+            -DPC_INSTALL_DIR=lib/pkgconfig
 
       - name: Build (Linux)
         working-directory: build
@@ -38,7 +42,7 @@ jobs:
         run: |
           cd install
           zip -r ../torrent-linux-x64.zip ./*
-        # ^ This creates 'torrent-linux-x64.zip' at the root of the repo.
+        # This creates 'torrent-linux-x64.zip' at the root of the repo.
 
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v3
@@ -63,7 +67,11 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
+          # Also set PC_INSTALL_DIR for consistency (macOS won't complain, but it's harmless).
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=../install \
+            -DPC_INSTALL_DIR=lib/pkgconfig
 
       - name: Build (macOS)
         working-directory: build
@@ -115,7 +123,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -A "${{ matrix.arch }}"
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A "${{ matrix.arch }}" -DCMAKE_INSTALL_PREFIX=../install
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
@@ -129,12 +137,9 @@ jobs:
         shell: bash
         run: cmake --install . --config Release --prefix ../install
 
-      # Now that BundleUtilities has copied all needed DLLs into /install/bin,
-      # we zip that folder for distribution.
       - name: Zip Windows Artifact
         shell: pwsh
         run: |
-          # Switch to the folder that has 'install\bin'
           Push-Location $Env:GITHUB_WORKSPACE
           Compress-Archive -Path install\* -DestinationPath torrent-win-x64.zip
           Pop-Location
@@ -179,9 +184,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            linux-artifact/*
-            macos-artifact/*
-            windows-artifact-x64/*
+            linux-artifact/*.zip
+            macos-artifact/*.zip
+            windows-artifact-x64/*.zip
           tag_name: ${{ github.ref }}
           name: Release ${{ env.release_version }}
           body: Release ${{ env.release_version }}

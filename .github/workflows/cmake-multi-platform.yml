@@ -84,7 +84,11 @@ jobs:
       - name: Install dependencies
         shell: pwsh
         run: |
-          choco install -y openssl
+          if [ "${{ matrix.arch }}" = "Win32" ]; then
+            choco install openssl --forcex86 --installargs 'ADDLOCAL=ALL'
+          else
+            choco install -y openssl
+          fi
 
       - name: Install Boost
         uses: MarkusJx/install-boost@v2.4.5

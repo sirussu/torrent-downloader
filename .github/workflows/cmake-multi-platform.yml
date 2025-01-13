@@ -75,7 +75,8 @@ jobs:
     strategy:
       # Build for both 32-bit (Win32) and 64-bit (x64)
       matrix:
-        arch: [Win32, x64]
+        # skip Win32, will require additional openssl build
+        arch: [x64]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -147,11 +148,11 @@ jobs:
           path: macos-artifact
 
       # Download both Win32 and x64 artifacts
-      - name: Download Windows x86 Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: windows-artifact-Win32
-          path: windows-artifact-x86
+#      - name: Download Windows x86 Artifact
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: windows-artifact-Win32
+#          path: windows-artifact-x86
 
       - name: Download Windows x64 Artifact
         uses: actions/download-artifact@v3

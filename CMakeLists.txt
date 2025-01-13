@@ -17,8 +17,8 @@ if(WIN32)
 endif()
 
 # Boost
-set(BOOST_DEBUG ON)  # Consider making this optional with a CMake option
-find_package(Boost 1.74.0 REQUIRED system) # Simplified Boost finding
+set(BOOST_DEBUG ON)
+find_package(Boost 1.74.0 REQUIRED system)
 include_directories(${Boost_INCLUDE_DIRS})
 
 # OpenSSL
@@ -66,40 +66,50 @@ else()
             torrent-rasterbar
             fmt
     )
+    # If needed for your environment:
+    # target_link_libraries(${PROJECT_NAME} pthread)
 endif()
 
 #
-# ----------------------- BundleUtilities Section (Windows Only) -----------------------
+# -------------------- Install Rules --------------------
+# We install the executable on *all* platforms.
+# Windows will also do fixup_bundle to gather DLLs.
+#
+
+# Common install (executable into bin/)
+install(
+        TARGETS ${PROJECT_NAME}
+        RUNTIME DESTINATION bin    # For .exe or binary on all platforms
+        LIBRARY DESTINATION lib    # For shared libs (non-Windows)
+        ARCHIVE DESTINATION lib    # For static libs
+)
+
+# If you previously had code that installed headers, it might look like:
+# install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
+#         DESTINATION include
+#         FILES_MATCHING
+#         PATTERN "*.hpp")
+
+# But if you *don't* want to install .hpp files, remove or comment that out.
+
+
+#
+# -------------------- BundleUtilities (Windows Only) --------------------
 #
 if(WIN32)
-    # 1. We install the executable to <install-prefix>/bin
-    install(
-            TARGETS ${PROJECT_NAME}
-            RUNTIME DESTINATION bin
-    )
-
-    # 2. Include the BundleUtilities module only at install-time.
-    #    We'll run fixup_bundle(...) AFTER we've installed the exe.
-    #    This will copy any dependent DLLs next to torrent_pp.exe.
+    # After the executable is installed, fixup_bundle will copy all needed DLLs into <prefix>/bin.
     install(CODE [[
         include(BundleUtilities)
 
-        # The installed exe is at "<prefix>/bin/torrent_pp.exe".
-        # fixup_bundle(<full path to exe> additional libs search dirs)
+        # Full path to the installed .exe
         set(_exe "${CMAKE_INSTALL_PREFIX}/bin/torrent_pp.exe")
 
-        message(STATUS "Fixing up bundle for: ${_exe}")
-        fixup_bundle(
-            "${_exe}"     # Full path to .exe
-            ""            # No additional libs explicitly listed
-            ""            # No extra search directories
-        )
+        # Only do fixup_bundle if the .exe actually exists.
+        if(EXISTS "${_exe}")
+            message(STATUS "Running fixup_bundle on: ${_exe}")
+            fixup_bundle("${_exe}" "" "")
+        else()
+            message(WARNING "Cannot find installed torrent_pp.exe at ${_exe}")
+        endif()
     ]])
 endif()
-
-#
-# ----------------------- End BundleUtilities Section -----------------------
-#
-
-# Remove platform-specific compiler flag modifications.
-# Let CMake decide the appropriate runtime library.

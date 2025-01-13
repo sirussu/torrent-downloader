@@ -24,7 +24,6 @@ jobs:
         run: |
           mkdir build
           cd build
-          # Specify PC_INSTALL_DIR so pkg-config files go into <prefix>/lib/pkgconfig
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=../install \
@@ -40,9 +39,9 @@ jobs:
 
       - name: Zip Linux Artifact
         run: |
-          cd install
-          zip -r ../torrent-linux-x64.zip ./*
-        # This creates 'torrent-linux-x64.zip' at the root of the repo.
+          # Zip only the bin folder contents
+          cd install/bin
+          zip -r ../../torrent-linux-x64.zip ./*
 
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v3
@@ -67,7 +66,6 @@ jobs:
         run: |
           mkdir build
           cd build
-          # Also set PC_INSTALL_DIR for consistency (macOS won't complain, but it's harmless).
           cmake .. \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=../install \
@@ -83,8 +81,9 @@ jobs:
 
       - name: Zip macOS Artifact
         run: |
-          cd install
-          zip -r ../torrent-macos-x64.zip ./*
+          # Zip only the bin folder contents
+          cd install/bin
+          zip -r ../../torrent-macos-x64.zip ./*
 
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v3
@@ -123,7 +122,10 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -A "${{ matrix.arch }}" -DCMAKE_INSTALL_PREFIX=../install
+          cmake .. \
+            -DCMAKE_BUILD_TYPE=Release \
+            -A "${{ matrix.arch }}" \
+            -DCMAKE_INSTALL_PREFIX=../install
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
@@ -140,8 +142,9 @@ jobs:
       - name: Zip Windows Artifact
         shell: pwsh
         run: |
-          Push-Location $Env:GITHUB_WORKSPACE
-          Compress-Archive -Path install\* -DestinationPath torrent-win-x64.zip
+          # Compress only the bin folder
+          Push-Location $Env:GITHUB_WORKSPACE\install\bin
+          Compress-Archive -Path .\* -DestinationPath ../../torrent-win-x64.zip
           Pop-Location
 
       - name: Upload Windows Artifact

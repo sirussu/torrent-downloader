@@ -84,11 +84,11 @@ jobs:
       - name: Install dependencies
         shell: pwsh
         run: |
-          if [ "${{ matrix.arch }}" = "Win32" ]; then
+          if ("${{ matrix.arch }}" -eq "Win32") {
             choco install openssl --forcex86 --installargs 'ADDLOCAL=ALL'
-          else
+          } else {
             choco install -y openssl
-          fi
+          }
 
       - name: Install Boost
         uses: MarkusJx/install-boost@v2.4.5
@@ -116,11 +116,11 @@ jobs:
       - name: Prepare Windows Artifact
         run: |
           mkdir -p windows-artifact
-          if [ "${{ matrix.arch }}" = "Win32" ]; then
+          if ("${{ matrix.arch }}" -eq "Win32") {
             cp build/bin/Release/torrent_pp.exe windows-artifact/torrent-win-x86.exe
-          else
+          } else {
             cp build/bin/Release/torrent_pp.exe windows-artifact/torrent-win-x64.exe
-          fi
+          }
 
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v3

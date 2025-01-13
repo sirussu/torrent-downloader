@@ -65,18 +65,27 @@ jobs:
           name: macos-artifact
           path: macos-artifact
 
+  # -----------------------------
+  # Windows build with a matrix
+  # -----------------------------
   build-windows:
     runs-on: windows-latest
     outputs:
       artifact_path: windows-artifact
+    strategy:
+      # Build for both 32-bit (Win32) and 64-bit (x64)
+      matrix:
+        arch: [Win32, x64]
     steps:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
+
       - name: Install dependencies
         shell: pwsh
         run: |
           choco install -y openssl
+
       - name: Install Boost
         uses: MarkusJx/install-boost@v2.4.5
         id: install-boost
@@ -84,26 +93,35 @@ jobs:
           boost_version: 1.81.0
           toolset: msvc
           platform_version: 2019
+
       - name: Configure CMake
         shell: bash
         run: |
           mkdir build
           cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release -A x64
+          # Use -A <arch> from the matrix
+          cmake .. -DCMAKE_BUILD_TYPE=Release -A "${{ matrix.arch }}"
         env:
           BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+
       - name: Build
         working-directory: build
         shell: bash
         run: cmake --build . --config Release -j4
+
       - name: Prepare Windows Artifact
         run: |
           mkdir -p windows-artifact
-          cp build/bin/Release/torrent_pp.exe windows-artifact/torrent_win-x64.exe
+          if [ "${{ matrix.arch }}" = "Win32" ]; then
+            cp build/bin/Release/torrent_pp.exe windows-artifact/torrent-win-x86.exe
+          else
+            cp build/bin/Release/torrent_pp.exe windows-artifact/torrent-win-x64.exe
+          fi
+
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: windows-artifact
+          name: windows-artifact-${{ matrix.arch }}
           path: windows-artifact
 
   release:
@@ -117,28 +135,40 @@ jobs:
         with:
           name: linux-artifact
           path: linux-artifact
+
       - name: Download macOS Artifact
         uses: actions/download-artifact@v3
         with:
           name: macos-artifact
           path: macos-artifact
-      - name: Download Windows Artifact
+
+      # Download both Win32 and x64 artifacts
+      - name: Download Windows x86 Artifact
         uses: actions/download-artifact@v3
         with:
-          name: windows-artifact
-          path: windows-artifact
+          name: windows-artifact-Win32
+          path: windows-artifact-x86
+
+      - name: Download Windows x64 Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: windows-artifact-x64
+          path: windows-artifact-x64
+
       - name: Extract Release Version
         id: extract_release
         run: |
           VERSION=${GITHUB_REF#refs/tags/}
           echo "release_version=$VERSION" >> $GITHUB_ENV
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
             linux-artifact/*
             macos-artifact/*
-            windows-artifact/*
+            windows-artifact-x86/*
+            windows-artifact-x64/*
           tag_name: ${{ github.ref }}
           name: Release ${{ env.release_version }}
           body: Release ${{ env.release_version }}

@@ -113,7 +113,7 @@ jobs:
         uses: MarkusJx/install-boost@v2.4.5
         id: install-boost
         with:
-          boost_version: 1.81.0
+          boost_version: 1.83.0
           toolset: msvc
           platform_version: 2019
 

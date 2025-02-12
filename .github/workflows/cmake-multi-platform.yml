@@ -160,19 +160,19 @@ jobs:
       contents: write
     steps:
       - name: Download Linux Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: linux-artifact
           path: linux-artifact
 
       - name: Download macOS Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: macos-artifact
           path: macos-artifact
 
       - name: Download Windows x64 Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: windows-artifact-x64
           path: windows-artifact-x64

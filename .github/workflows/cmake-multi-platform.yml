@@ -44,7 +44,7 @@ jobs:
           zip -r ../../torrent-linux-x64.zip ./*
 
       - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-artifact
           path: torrent-linux-x64.zip
@@ -86,7 +86,7 @@ jobs:
           zip -r ../../torrent-macos-x64.zip ./*
 
       - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-artifact
           path: torrent-macos-x64.zip
@@ -107,7 +107,7 @@ jobs:
       - name: Install dependencies (Windows)
         shell: pwsh
         run: |
-          choco install -y openssl
+          choco install -y openssl --version=3.4.1 
 
       - name: Install Boost (Windows)
         uses: MarkusJx/install-boost@v2.4.5

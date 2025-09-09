@@ -58,24 +58,27 @@ jobs:
         with:
           submodules: recursive
   
-      # Build tools only. (Deliberately NOT installing boost/openssl from Homebrew.)
+      # Build tools only (avoid Homebrew boost/openssl to prevent dynamic picks)
       - name: Install build tools
         run: |
           brew update
           brew install cmake ninja pkg-config
   
-      # Set up vcpkg with caching; no vcpkg.json required
-      - name: Setup vcpkg
+      # Setup vcpkg and PIN its commit (no vcpkg.json in your repo needed)
+      - name: Setup vcpkg (pinned)
         uses: lukka/run-vcpkg@v11
+        with:
+          # vcpkg registry release 2025.08.27 (full SHA below)
+          vcpkgGitCommitId: 120deac3062162151622ca4860575a33844ba10b
   
       # Install static Boost + OpenSSL for Apple Silicon
-      - name: Install dependencies via vcpkg (static)
+      - name: Install deps via vcpkg (static by default on macOS)
         run: |
           "$VCPKG_ROOT/vcpkg" install boost openssl --triplet arm64-osx
   
       - name: Configure
         env:
-          # Help pkg-config prefer vcpkg over system paths, if your CMake uses it.
+          # Help pkg-config prefer vcpkg if your CMake uses it
           PKG_CONFIG_PATH: "$VCPKG_ROOT/installed/arm64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/arm64-osx/share/pkgconfig"
         run: |
           mkdir -p build

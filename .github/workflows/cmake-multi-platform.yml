@@ -143,12 +143,12 @@ jobs:
           choco install -y openssl --version=3.5.2
 
       - name: Install Boost (Windows)
-        uses: MarkusJx/install-boost@v2.4.5
+        uses: MarkusJx/install-boost@v2.5.0
         id: install-boost
         with:
           boost_version: 1.83.0
           toolset: msvc
-          platform_version: 2022
+          platform_version: 2025
 
       - name: Configure (Windows)
         shell: bash

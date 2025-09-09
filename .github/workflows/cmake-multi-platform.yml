@@ -68,7 +68,9 @@ jobs:
       # Install static Boost + OpenSSL for Apple Silicon
       - name: Install deps via vcpkg (static by default on macOS)
         run: |
-          "$VCPKG_ROOT/vcpkg" install boost-headers boost-asio boost-system boost-date-time openssl --triplet arm64-osx
+          "$VCPKG_ROOT/vcpkg" install \
+            boost-headers boost-asio boost-system boost-date-time boost-logic \
+            openssl --triplet arm64-osx
 
       - name: Configure
         env:
@@ -146,7 +148,7 @@ jobs:
         uses: MarkusJx/install-boost@v2.5.0
         id: install-boost
         with:
-          boost_version: 1.83.0
+          boost_version: 1.85.0
           toolset: msvc
           platform_version: 2025
 

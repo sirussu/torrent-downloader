@@ -70,7 +70,7 @@ jobs:
         run: |
           "$VCPKG_ROOT/vcpkg" install \
             boost-headers boost-logic boost-variant boost-asio boost-system boost-date-time \
-            boost-multiprecision \
+            boost-multiprecision boost-crc\
             openssl --triplet arm64-osx
 
       - name: Configure

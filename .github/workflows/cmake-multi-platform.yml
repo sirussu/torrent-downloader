@@ -57,34 +57,70 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-
-      - name: Install dependencies (macOS)
+  
+      # Build tools only. (Deliberately NOT installing boost/openssl from Homebrew.)
+      - name: Install build tools
         run: |
-          brew install boost boost-build openssl@3
-
-      - name: Configure (macOS)
+          brew update
+          brew install cmake ninja pkg-config
+  
+      # Set up vcpkg with caching; no vcpkg.json required
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+  
+      # Install static Boost + OpenSSL for Apple Silicon
+      - name: Install dependencies via vcpkg (static)
         run: |
-          mkdir build
+          "$VCPKG_ROOT/vcpkg" install boost openssl --triplet arm64-osx
+  
+      - name: Configure
+        env:
+          # Help pkg-config prefer vcpkg over system paths, if your CMake uses it.
+          PKG_CONFIG_PATH: "$VCPKG_ROOT/installed/arm64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/arm64-osx/share/pkgconfig"
+        run: |
+          mkdir -p build
           cd build
           cmake .. \
+            -G Ninja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_INSTALL_PREFIX=../install \
-            -DPC_INSTALL_DIR=lib/pkgconfig
-
-      - name: Build (macOS)
+            -DPC_INSTALL_DIR=lib/pkgconfig \
+            -DCMAKE_OSX_ARCHITECTURES=arm64 \
+            -DCMAKE_TOOLCHAIN_FILE="$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" \
+            -DVCPKG_TARGET_TRIPLET=arm64-osx \
+            -DCMAKE_FIND_PACKAGE_PREFER_CONFIG=ON \
+            -DBoost_USE_STATIC_LIBS=ON \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DOPENSSL_USE_STATIC_LIBS=TRUE
+  
+      - name: Build
         working-directory: build
-        run: cmake --build . --config Release -j4
-
-      - name: Install (macOS)
+        run: cmake --build . -j4
+  
+      - name: Install
         working-directory: build
-        run: cmake --install . --config Release --prefix ../install
-
+        run: cmake --install . --config Release
+  
+      # CI gate: fail if any dynamic Boost/OpenSSL sneaks in
+      - name: Verify no dynamic Boost/OpenSSL deps
+        run: |
+          set -euo pipefail
+          bad=0
+          for b in install/bin/*; do
+            [ -x "$b" ] || continue
+            echo "Checking $b"
+            if otool -L "$b" | grep -E 'libboost_.*\.dylib|libssl\.dylib|libcrypto\.dylib' ; then
+              echo "ERROR: $b links to dynamic Boost/OpenSSL" >&2
+              bad=1
+            fi
+          done
+          exit $bad
+  
       - name: Zip macOS Artifact
         run: |
-          # Zip only the bin folder contents
           cd install/bin
           zip -r ../../torrent-macos-x64.zip ./*
-
+  
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:

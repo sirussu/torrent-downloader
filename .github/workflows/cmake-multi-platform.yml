@@ -140,7 +140,7 @@ jobs:
       - name: Install dependencies (Windows)
         shell: pwsh
         run: |
-          choco install -y openssl --version=3.4.2
+          choco install -y openssl --version=3.5.2
 
       - name: Install Boost (Windows)
         uses: MarkusJx/install-boost@v2.4.5

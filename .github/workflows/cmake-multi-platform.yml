@@ -69,7 +69,7 @@ jobs:
       - name: Install deps via vcpkg (static by default on macOS)
         run: |
           "$VCPKG_ROOT/vcpkg" install \
-            boost-headers boost-variant boost-asio boost-system boost-date-time \
+            boost-headers boost-logic boost-variant boost-asio boost-system boost-date-time \
             openssl --triplet arm64-osx
 
       - name: Configure
@@ -145,7 +145,7 @@ jobs:
           choco install -y openssl --version=3.5.2
 
       - name: Install Boost (Windows)
-        uses: MarkusJx/install-boost@v2.5.0
+        uses: MarkusJx/install-boost@6d8df42f57de83c5b326b5b83e7b35d650030103
         id: install-boost
         with:
           boost_version: 1.88.0

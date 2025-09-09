@@ -20,7 +20,7 @@ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 
 # Boost
 set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.74 REQUIRED COMPONENTS system)
+find_package(Boost 1.74 REQUIRED COMPONENTS system date_time)
 
 # OpenSSL (force MODULE mode + provide lowercase aliases) ---
 # Always use CMake's FindOpenSSL module so we get OpenSSL::SSL / OpenSSL::Crypto.

@@ -58,12 +58,6 @@ jobs:
         with:
           submodules: recursive
   
-      # Build tools only (avoid Homebrew boost/openssl to prevent dynamic picks)
-      - name: Install build tools
-        run: |
-          brew update
-          brew install cmake ninja pkg-config
-  
       # Setup vcpkg and PIN its commit (no vcpkg.json in your repo needed)
       - name: Setup vcpkg (pinned)
         uses: lukka/run-vcpkg@v11

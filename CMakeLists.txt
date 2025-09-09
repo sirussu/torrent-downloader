@@ -21,7 +21,6 @@ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 # Boost
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.74 REQUIRED COMPONENTS system)
-target_link_libraries(torrent_pp PRIVATE Boost::system)
 
 # OpenSSL
 set(OPENSSL_USE_STATIC_LIBS ON)
@@ -29,7 +28,6 @@ find_package(OpenSSL REQUIRED)
 
 # Threads
 find_package(Threads REQUIRED)
-target_link_libraries(torrent_pp PRIVATE Threads::Threads)
 
 # Output directories
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

@@ -22,9 +22,24 @@ set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ON)
 set(Boost_USE_STATIC_LIBS ON)
 find_package(Boost 1.74 REQUIRED COMPONENTS system)
 
-# OpenSSL
+# OpenSSL (force MODULE mode + provide lowercase aliases) ---
+# Always use CMake's FindOpenSSL module so we get OpenSSL::SSL / OpenSSL::Crypto.
 set(OPENSSL_USE_STATIC_LIBS ON)
-find_package(OpenSSL REQUIRED)
+set(_saved_pref ${CMAKE_FIND_PACKAGE_PREFER_CONFIG})
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG OFF)
+find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
+set(CMAKE_FIND_PACKAGE_PREFER_CONFIG ${_saved_pref})
+
+# Some deps (or vcpkg config mode) may expect lowercase openssl::ssl/openssl::crypto.
+# Create lightweight INTERFACE IMPORTED shims that forward to the canonical targets.
+if(TARGET OpenSSL::SSL AND NOT TARGET openssl::ssl)
+    add_library(openssl::ssl INTERFACE IMPORTED)
+    target_link_libraries(openssl::ssl INTERFACE OpenSSL::SSL)
+endif()
+if(TARGET OpenSSL::Crypto AND NOT TARGET openssl::crypto)
+    add_library(openssl::crypto INTERFACE IMPORTED)
+    target_link_libraries(openssl::crypto INTERFACE OpenSSL::Crypto)
+endif()
 
 # Threads
 find_package(Threads REQUIRED)
